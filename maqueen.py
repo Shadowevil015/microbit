@@ -22,7 +22,7 @@
 
 from microbit import *
 import neopixel
-import time as utime
+import utime
 
 class Maqueen:
 

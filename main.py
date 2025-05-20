@@ -3,7 +3,11 @@ import radio
 
 i2c.init(freq=100000, sda=pin20, scl=pin19)
 radio.on()
-radio.config(address=1969383799)
+radio.config(channel=1)
+
+CAR_ID = "team3"
+has_lightning = False
+has_boost = False
 
 MOTOR_ADDRESS = 0x10
 MOTOR_LEFT = 0x00
@@ -23,16 +27,36 @@ def encode(password):
 
 #The rest of the code goes into the while loop
 while True:
+
+    incoming = radio.receive()
+
+    if incoming:
+        if incoming.startswith("LIGHTING:") and incoming.split(":")[1] == CAR_ID:
+            has_lightning = True
+            # display.show("X")
+            sleep(200)
+            # print(has_lightning)
+        if incoming.startswith("BOOST:") and incoming.split(":")[1] == CAR_ID:
+            has_boost = True
+    
+    if has_lightning and pin16.read_digital() == 0:
+        radio.send("STUN:team3")
+        has_lightning = False
+        # display.show("O")
+        sleep(200)
+        # print(has_lightning)
+
+    if has_boost and accelerometer.current_gesture('shake'):
+        radio.send("FAST:team3")
+        has_boost = False
+        # display.show("U")
+        sleep(200)
+        # print(has_boost)
+
+    if not pin16.read_digital() == 0 and not accelerometer.current_gesture('shake'):
+        display.clear()
+
     message = ""
-    display.clear()
-    joystick_x = pin1.read_analog() - 512
-
-   #turn
-    turn_speed = (joystick_x * 255) // 512
-
-    if pin_logo.is_touched():
-        message += ",auto"
-
     #yellow
     if pin14.read_digital() == 0: 
         message += ",go"
@@ -48,11 +72,6 @@ while True:
     #green btn
     if pin13.read_digital() == 0:
         message += ",reverse"
-
-    #turn
-    if turn_speed >30 or turn_speed < -30:
-        print(turn_speed)
-        message += "," + str(turn_speed)
 
     if button_a.is_pressed():
         message += ",left"

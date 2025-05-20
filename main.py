@@ -1,38 +1,74 @@
-from main import *
 from maqueen import *
-import random
 from mbrobot_plusV2 import *
 import radio
-import speech
-import music
+from micrbit import i2c, pin15, pin20, pin19
+
+i2c.init(freq=100000, sda=pin20, scl=pin19)
+
+MOTOR_ADDRESS = 0x10
+LINE_SENSOR_REGISTER = 0x1D
+RGB_LED_PIN = pin15  
+RGB_LED_COUNT = 4 
+
+line_detected = False
+no_line_counter = 0
+NO_LINE_THRESHOLD = 20 
+
+ignore_line_detection = False
+ignore_line_start_time = 0
+IGNORE_LINE_DURATION = 750
+
+np = neopixel.NeoPixel(RGB_LED_PIN, RGB_LED_COUNT)
+
+def read_line_sensors():
+    i2c.write(MOTOR_ADDRESS, bytes([LINE_SENSOR_REGISTER]))
+    sensor_data = i2c.read(MOTOR_ADDRESS, 2)
+
+    data = sensor_data[0]
+    L1 = (data >> 0) & 1
+    L2 = (data >> 1) & 1
+    M = (data >> 2) & 1
+    R1 = (data >> 3) & 1
+    R2 = (data >> 4) & 1
+
+    return {"L1": L1, "L2": L2, "M": M, "R1": R1, "R2": R2}
+
+def line_sensor_logic(sensors):
+
+    global line_detected, no_line_counter
+
+    if sensors["L1"] == 1 or sensors["L2"] == 1 or sensors["M"] == 1 or sensors["R1"] == 1 or sensors["R2"] == 1:
+        line_detected = True
+        no_line_counter = 0
+    else:
+        no_line_counter += 1
+        if no_line_counter >= NO_LINE_THRESHOLD:
+            line_detected = False
+
+    if line_detected and not ignore_line_detection:
+        for i in range(RGB_LED_COUNT):
+            np[i] = (255, 0, 0) 
+        np.show()
+    else:
+        for i in range(RGB_LED_COUNT):
+            np[i] = (0, 0, 0) 
+        np.show()
+
+
 
 robot = Maqueen()
 radio.on()
 radio.config(address=1969383799)
 
-# Your code follows here.
-
 while True:
-    # r = random.randint(1, 255)
-    # g = random.randint(1, 255)
-    # b = random.randint(1, 255)
-    
-    # if accelerometer.was_gesture('shake'):
-    #     speech.say('womp womp', speed=97, throat=255, pitch=85)
-    # sleep(1000)
 
-    # for freq in range(2000, 800, -100):
-    #     music.pitch(freq, 30)
+    sensors = read_line_sensors() 
 
-    # setRGB(r, g, b)
-    # sleep(1000)
+    line_sensor_logic(sensors)
 
-    # if getDistance() > 20:
-    #     backward()
-    # else:
-    #     forward()
-
-    setRGB(170,68,101)
+    if instruct == "go" or instruct == 'womp' and not ignore_line_detection:
+        ignore_line_detection = True
+        ignore_line_start_time = running_time()
 
     instruct = radio.receive()
 
@@ -54,60 +90,6 @@ while True:
             setSpeed(150)
             right()
         if instruct == 'womp':
-        #     speech.say('womp womp', speed=97, throat=255, pitch=85)#
             setSpeed(50)
             forward()
-        # if getDistance() > 20:
-        #     speech.say('womp womp', speed=97, throat=255, pitch=85)
             
-        # try:
-        #     int(instruct)
-        #     if int(instruct) < -31:
-        #         stop()
-        #         robot.motor_right(200,0)
-        #         utime.sleep_ms(200)
-        #         robot.motor_right(0,0)
-        #     elif int(instruct) > 31:
-        #         stop()
-        #         robot.motor_left(200,0)
-        #         utime.sleep_ms(200)
-        #         robot.motor_left(0,0)
-        # except ValueError:
-        #     pass
-        # if instruct.isDigit() or instruct.includes('-'):
-        #     if instruct < -31:
-        #         leftArc(50)
-        #     elif instruct > 31:
-        #         rightArc(50)
-
-    # if instruct:
-    #     if instruct == 'f':
-    #         forward()
-    #     if instruct == 'b':
-    #         backward()
-    #     if instruct == 'stop':
-    #         speech.say('womp womp', speed=97, throat=255, pitch=85)
-
-    #         # speed = 50
-    #     if instruct == 'l':
-    #         left()
-    #         # utime.sleep_ms(1000)
-    #         # instruct = 'f'
-    #     if instruct == 'r':
-    #         right()
-    #         # utime.sleep_ms(1000)
-    #         # instruct = 'f'
-    #     # if instruct == 's50':
-    #     #     setSpeed(50)
-    #     # if instruct == 's200':
-    #     #     setSpeed(200)
-    #     # if instruct == 'i':
-    #     #     speed = speed + 1
-    #     #     setSpeed(speed)
-    #     #     display.show(speed)
-    #     # if instruct == 'd':
-    #     #     speed = speed - 1
-    #     #     setSpeed(speed)
-
-        
-     

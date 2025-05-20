@@ -66,8 +66,8 @@ while True:
         message += ",stop"
 
     #blue btn
-    if pin16.read_digital() == 0:
-        message += ",womp"
+    # if pin16.read_digital() == 0:
+    #     message += ",womp"
 
     #green btn
     if pin13.read_digital() == 0:

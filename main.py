@@ -53,8 +53,8 @@ while True:
         sleep(200)
         # print(has_boost)
 
-    if not pin16.read_digital() == 0 and not accelerometer.current_gesture('shake'):
-        display.clear()
+    # if not pin16.read_digital() == 0 and not accelerometer.current_gesture('shake'):
+    #     display.clear()
 
     message = ""
     #yellow

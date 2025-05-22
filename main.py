@@ -20,43 +20,11 @@ pin16.set_pull(pin16.PULL_UP) #blue
 pin13.set_pull(pin13.PULL_UP) #green
 pin14.set_pull(pin14.PULL_UP) #yellow
 
-
-def encode(password):
-    enc = str(password)
-    return enc.strip()
-
 #The rest of the code goes into the while loop
 while True:
-
-    incoming = radio.receive()
-
-    if incoming:
-        if incoming.startswith("LIGHTING:") and incoming.split(":")[1] == CAR_ID:
-            has_lightning = True
-            # display.show("X")
-            sleep(200)
-            # print(has_lightning)
-        if incoming.startswith("BOOST:") and incoming.split(":")[1] == CAR_ID:
-            has_boost = True
     
-    if has_lightning and pin16.read_digital() == 0:
-        radio.send("STUN:team3")
-        has_lightning = False
-        # display.show("O")
-        sleep(200)
-        # print(has_lightning)
-
-    if has_boost and accelerometer.current_gesture('shake'):
-        radio.send("FAST:team3")
-        has_boost = False
-        # display.show("U")
-        sleep(200)
-        # print(has_boost)
-
-    # if not pin16.read_digital() == 0 and not accelerometer.current_gesture('shake'):
-    #     display.clear()
-
     message = ""
+    
     #yellow
     if pin14.read_digital() == 0: 
         message += ",go"
@@ -78,6 +46,44 @@ while True:
 
     if button_b.is_pressed():
         message += ",right"
+
+    incoming = radio.receive()
+
+    if incoming:
+        if incoming.startswith("LIGHTING:") and incoming.split(":")[1] == CAR_ID:
+            has_lightning = True
+            # display.show("X")
+            # sleep(200)
+            # print(has_lightning)
+        if incoming.startswith("BOOST:") and incoming.split(":")[1] == CAR_ID:
+            has_boost = True
+    
+    if has_lightning and pin16.read_digital() == 0:
+        radio.send("STUN:team3")
+        has_lightning = False
+        # display.show("O")
+        # sleep(200)
+        # print(has_lightning)
+
+    if has_boost and accelerometer.is_gesture('shake'):
+        radio.send("FAST:team3")
+        has_boost = False
+        # display.show("U")
+        # sleep(200)
+        # print(has_boost)
+
+    # if accelerometer.is_gesture('shake'):
+    #     display.show("!")
+    #     sleep(200)
+    #     display.clear()
+
+    if has_boost:
+        display.show("B")
+        sleep(200)
+        display.clear()
+
+    # if not pin16.read_digital() == 0 and not accelerometer.current_gesture('shake'):
+    #     display.clear()
 
     radio.send(message)
     # display.show(encode(message))

@@ -26,42 +26,42 @@ boost_active = False
 boost_start_time = 0
 BOOST_DURATION = 3000
 
-
-
 while True:
 
     instruct = radio.receive()
 
-
-    if instruct:
-        instruct = instruct.replace(',', '')
-        
-        if instruct == 'reverse':
+    try:
+        instruct = str(instruct)
+    except:
+        pass
+    
+    if instruct.startswith(','):
+        if instruct == ',reverse':
             setSpeed(200)
             backward()
-        if instruct == 'go':
+        if instruct == ',go':
             setSpeed(200)
             forward()
-        if instruct == 'stop':
+        if instruct == ',stop':
             stop()
-        if instruct == 'left':
-            setSpeed(175)
+        if instruct == ',left':
+            setSpeed(125)
             left()
-        if instruct == 'right':
-            setSpeed(175)
+        if instruct == ',right':
+            setSpeed(125)
             right()
-        if instruct == 'womp':
-            print('womp')
+        # if instruct == 'womp':
+            # print('womp')
 
-        if instruct.startswith("FAST:") and instruct.split(":")[1] == CAR_ID:
+    if instruct.startswith("FAST:") and instruct.split(":")[1] == CAR_ID:
                     boost_active = True
                     boost_start_time = running_time()
-                    display.show("B")
-        elif instruct.startswith("STUN:") and instruct.split(":")[1] != CAR_ID and not stunned:
+                    # display.show("B")
+    if instruct.startswith("STUN:") and instruct.split(":")[1] != CAR_ID and not stunned:
                     stunned = True
                     stun_start_time = running_time()
                     stop()
-                    display.show("X")
+                    # display.show("X")
             
     if stunned:
         if running_time() - stun_start_time< 5000:
@@ -89,4 +89,4 @@ while True:
             for i in range(RGB_LED_COUNT):
                 np[i] = (0, 0, 0)
             np.show()
-    sleep(100)
+    # sleep(100)
